@@ -1,0 +1,1703 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>프야선수사진 노예 v1.6</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+
+  :root {
+    --bg: #0f0f13;
+    --surface: #1a1a22;
+    --surface2: #22222e;
+    --accent: #e8383a;
+    --accent2: #1a3a8f;
+    --text: #f0f0f5;
+    --muted: #888899;
+    --border: #2a2a38;
+    --card-w: 320px;
+    --card-h: 423px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* 배경 그리드 */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(232,56,58,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(232,56,58,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  /* 헤더 */
+  header {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+  .logo-mark {
+    width: 52px;
+    height: 52px;
+    background: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    clip-path: polygon(0 0, 100% 0, 100% 75%, 85% 100%, 0 100%);
+    flex-shrink: 0;
+  }
+  .logo-mark svg { width: 28px; height: 28px; fill: white; }
+  .header-text h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 2px;
+    line-height: 1;
+    color: var(--text);
+  }
+  .header-text p {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 4px;
+    font-weight: 300;
+    letter-spacing: 0.5px;
+  }
+
+  /* 설정 패널 */
+  .settings-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: 2px solid var(--accent);
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .settings-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  .settings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+  }
+  .setting-item label {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+  }
+  .setting-item input[type="number"],
+  .setting-item input[type="range"],
+  .setting-item input[type="color"] {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .setting-item input:focus { border-color: var(--accent); }
+  .setting-item input[type="color"] { padding: 4px; height: 38px; cursor: pointer; }
+  .range-value {
+    font-size: 0.8rem;
+    color: var(--accent);
+    text-align: right;
+    margin-top: 4px;
+  }
+
+  /* 드롭존 */
+  .drop-zone {
+    background: var(--surface);
+    border: 2px dashed var(--border);
+    padding: 56px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    margin-bottom: 24px;
+    position: relative;
+  }
+  .drop-zone:hover, .drop-zone.dragover {
+    border-color: var(--accent);
+    background: rgba(232,56,58,0.05);
+  }
+  .drop-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+  .drop-icon {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+    display: block;
+  }
+  .drop-zone h3 {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+  .drop-zone p {
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-weight: 300;
+  }
+  .file-count-badge {
+    display: inline-block;
+    background: var(--accent);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 4px 12px;
+    letter-spacing: 1px;
+    margin-top: 12px;
+  }
+
+  /* 실행 버튼 */
+  .run-btn {
+    width: 100%;
+    padding: 18px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .run-btn:hover { background: #c0282a; }
+  .run-btn:disabled { background: #444; cursor: not-allowed; opacity: 0.6; }
+  .run-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.5s;
+  }
+  .run-btn:hover::after { transform: translateX(100%); }
+
+  /* 진행 상태 */
+  .progress-section { margin-bottom: 32px; display: none; }
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .progress-label { font-size: 0.78rem; color: var(--muted); letter-spacing: 1px; }
+  .progress-count { font-size: 0.78rem; color: var(--accent); font-weight: 700; }
+  .progress-bar-bg {
+    height: 4px;
+    background: var(--surface2);
+    position: relative;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    width: 0%;
+    transition: width 0.3s;
+  }
+  .progress-log {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 12px 16px;
+    margin-top: 12px;
+    height: 120px;
+    overflow-y: auto;
+    font-size: 0.72rem;
+    color: var(--muted);
+    font-family: 'Courier New', monospace;
+    line-height: 1.8;
+  }
+  .log-ok { color: #4caf7d; }
+  .log-warn { color: #f0a500; }
+  .log-err { color: var(--accent); }
+
+  /* 미리보기 그리드 */
+  .preview-section { display: none; }
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .btn-group { display: flex; gap: 8px; align-items: center; }
+  .download-all-btn {
+    background: var(--accent2);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: background 0.2s;
+  }
+  .download-all-btn:hover { background: #1e4ab5; }
+
+  .preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+  }
+  .preview-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+    animation: fadeIn 0.3s ease;
+  }
+  .preview-card:hover { transform: translateY(-3px); border-color: var(--accent); }
+  .preview-card img {
+    width: 100%;
+    aspect-ratio: 320/423;
+    object-fit: cover;
+    display: block;
+  }
+  .guide-canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    aspect-ratio: 320/423;
+    pointer-events: none;
+  }
+  .preview-card-name {
+    padding: 6px 8px;
+    font-size: 0.65rem;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border-top: 1px solid var(--border);
+  }
+  .preview-card a {
+    display: block;
+    text-decoration: none;
+  }
+
+  /* 제외 선택 */
+  .preview-card {
+    position: relative;
+    cursor: pointer;
+  }
+  .preview-card.excluded {
+    border-color: var(--accent) !important;
+  }
+  .preview-card.excluded::after {
+    content: '✕';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: rgba(255,255,255,0.8);
+    background: rgba(0,0,0,0.62);
+    pointer-events: none;
+    z-index: 15;
+  }
+  .selected-count {
+    font-size: 0.75rem;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* 배경색 프리셋 */
+  .preset-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+    gap: 6px;
+    margin-top: 4px;
+  }
+  .preset-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 4px;
+    background: var(--surface2);
+    border: 2px solid var(--border);
+    cursor: pointer;
+    transition: border-color 0.15s, transform 0.1s;
+    border-radius: 4px;
+  }
+  .preset-btn:hover { border-color: var(--muted); transform: translateY(-1px); }
+  .preset-btn.selected { border-color: var(--accent) !important; }
+  .preset-swatch {
+    width: 32px;
+    height: 32px;
+    border-radius: 3px;
+    display: block;
+    flex-shrink: 0;
+  }
+  .preset-name {
+    font-size: 0.65rem;
+    color: var(--muted);
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+  }
+  .preset-btn.selected .preset-name { color: var(--accent); }
+  .dot-preset {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.15);
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.1s, border-color 0.1s;
+    flex-shrink: 0;
+  }
+  .dot-preset:hover { transform: scale(1.35); border-color: #fff; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* 통계 바 */
+  .stats-bar {
+    display: flex;
+    gap: 24px;
+    background: var(--surface2);
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    border-left: 3px solid var(--accent);
+  }
+  .stat { text-align: center; }
+  .stat-num { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; color: var(--accent); }
+  .stat-label { font-size: 0.65rem; color: var(--muted); letter-spacing: 1px; }
+
+  /* ── 크롭 모달 ── */
+  .crop-modal-bg {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.88); z-index: 1000;
+    align-items: center; justify-content: center;
+  }
+  .crop-modal-bg.open { display: flex; }
+  .crop-modal {
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 20px; width: min(96vw, 560px);
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .crop-modal-header { display: flex; justify-content: space-between; align-items: center; }
+  .crop-modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; letter-spacing: 2px; color: var(--accent); }
+  .crop-close-btn { background: none; border: none; color: var(--muted); font-size: 1.4rem; cursor: pointer; }
+  .crop-close-btn:hover { color: var(--text); }
+  .crop-body { display: flex; gap: 20px; align-items: flex-start; }
+  .crop-preview-label { font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 6px; }
+  #cropPreviewCanvas { border: 1px solid var(--border); display: block; }
+  .crop-sliders { flex: 1; display: flex; flex-direction: column; gap: 16px; padding-top: 2px; }
+  .slider-row { display: flex; flex-direction: column; gap: 5px; }
+  .slider-row label { font-size: 0.72rem; color: var(--muted); display: flex; justify-content: space-between; }
+  .slider-row label span { color: var(--accent); font-weight: 700; min-width: 32px; text-align: right; }
+  .slider-row input[type=range] { width: 100%; accent-color: var(--accent); cursor: pointer; }
+  .crop-actions { display: flex; gap: 10px; justify-content: flex-end; }
+  .crop-hint-sm { font-size: 0.68rem; color: var(--muted); padding: 6px 10px; background: var(--surface2); border-left: 2px solid var(--accent); }
+  .crop-canvas-wrap {
+    position: relative; cursor: crosshair; align-self: center;
+    border: 1px solid var(--border); overflow: hidden; max-height: 55vh;
+    display: flex; justify-content: center;
+  }
+  #cropCanvas { display: block; max-width: 100%; max-height: 55vh; }
+  #cropOverlay {
+    position: absolute; border: 2px solid #00e5ff;
+    box-shadow: 0 0 0 9999px rgba(0,0,0,0.52);
+    pointer-events: none; display: none;
+  }
+  .crop-confirm-btn {
+    background: var(--accent); color: white; border: none;
+    padding: 10px 24px; font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.82rem; font-weight: 700; cursor: pointer;
+  }
+  .crop-confirm-btn:hover { background: #c0282a; }
+  .crop-reset-btn {
+    background: var(--surface2); color: var(--muted);
+    border: 1px solid var(--border); padding: 10px 18px;
+    font-family: 'Noto Sans KR', sans-serif; font-size: 0.82rem; cursor: pointer;
+  }
+  .crop-reset-btn:hover { color: var(--text); }
+  /* 카드 오버레이 — hover 시 표시 */
+  .preview-card.excluded::after { pointer-events: none; }
+  .preview-card .card-overlay {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s;
+    position: absolute; inset: 0;
+    flex-direction: column; align-items: center; justify-content: center;
+    gap: 6px; z-index: 30;
+    display: flex;
+    background: rgba(0,0,0,0.45);
+  }
+  .preview-card:hover .card-overlay {
+    opacity: 1;
+    pointer-events: all;
+  }
+  .card-overlay button {
+    background: #fff; color: #111;
+    border: 2px solid #fff; padding: 6px 14px;
+    font-size: 0.68rem; font-weight: 700; cursor: pointer;
+    white-space: nowrap; width: 160px; text-align: center;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.75); letter-spacing: 0.3px;
+    pointer-events: all;
+  }
+  .card-overlay button:hover { background: #eee; }
+  .card-overlay .btn-pos  { color: #1a6fff; }
+  .card-overlay .btn-dl   { color: #1a9950; }
+  .card-overlay .btn-crop { color: #c0392b; }
+
+</style>
+</head>
+<body>
+
+<!-- 크롭 모달 -->
+<div class="crop-modal-bg" id="cropModalBg">
+  <div class="crop-modal">
+    <div class="crop-modal-header">
+      <div class="crop-modal-title" id="cropModalName">크롭 편집</div>
+      <button class="crop-close-btn" onclick="closeCropModal()">✕</button>
+    </div>
+    <div class="crop-hint-sm">✂ 팔꿈치 위로 대충 드래그 → 얼굴 자동 감지 후 동일한 위치/크기로 카드 재생성</div>
+    <div class="crop-canvas-wrap" id="cropCanvasWrap">
+      <canvas id="cropCanvas"></canvas>
+      <div id="cropOverlay"></div>
+    </div>
+    <div class="crop-actions">
+      <div style="font-size:0.7rem;color:var(--muted);align-self:center;">
+        PREVIEW<br><canvas id="cropPreviewCanvas" width="107" height="141" style="vertical-align:middle;border:1px solid var(--border);margin-top:4px;display:block;"></canvas>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="crop-reset-btn" onclick="resetCropDrag()">↺ 초기화</button>
+        <button class="crop-confirm-btn" id="cropConfirmBtn" onclick="confirmCrop()">✓ 재생성</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── 위치 조정 모달 ── -->
+<div class="crop-modal-bg" id="posModalBg">
+  <div class="crop-modal" style="max-width:460px;">
+    <div class="crop-modal-header">
+      <div class="crop-modal-title" id="posModalName">↕ 위치 조정</div>
+      <button class="crop-close-btn" onclick="closePosModal()">✕</button>
+    </div>
+    <div class="crop-hint-sm">슬라이더로 위치를 조정한 뒤 적용하세요</div>
+    <div style="display:flex;gap:16px;padding:12px 16px;align-items:flex-start;">
+      <!-- 프리뷰 -->
+      <div style="flex-shrink:0;position:relative;width:160px;height:212px;background:#111;border:1px solid var(--border);overflow:hidden;">
+        <canvas id="posCanvas" width="320" height="423" style="position:absolute;top:0;left:0;width:160px;height:212px;"></canvas>
+        <canvas id="posGuideCanvas" width="320" height="423" style="position:absolute;top:0;left:0;width:160px;height:212px;pointer-events:none;"></canvas>
+      </div>
+      <!-- 슬라이더 -->
+      <div style="flex:1;display:flex;flex-direction:column;gap:14px;padding-top:4px;">
+        <div>
+          <label style="font-size:0.7rem;color:var(--muted);display:flex;justify-content:space-between;">
+            <span>↕ 상하 이동</span><span id="posYLabel" style="color:var(--accent);">0px</span>
+          </label>
+          <input type="range" id="posYSlider" min="-150" max="150" value="0" step="1"
+            oninput="onPosSlider()" style="width:100%;margin-top:4px;">
+        </div>
+        <div>
+          <label style="font-size:0.7rem;color:var(--muted);display:flex;justify-content:space-between;">
+            <span>↔ 좌우 이동</span><span id="posXLabel" style="color:var(--accent);">0px</span>
+          </label>
+          <input type="range" id="posXSlider" min="-150" max="150" value="0" step="1"
+            oninput="onPosSlider()" style="width:100%;margin-top:4px;">
+        </div>
+        <button onclick="resetPosSliders()" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:6px;font-size:0.7rem;cursor:pointer;align-self:flex-start;">↺ 초기화</button>
+        <div>
+          <label style="font-size:0.7rem;color:var(--muted);display:flex;justify-content:space-between;">
+            <span>⤡ 크기 조정</span><span id="posScaleLabel" style="color:var(--accent);">100%</span>
+          </label>
+          <input type="range" id="posScaleSlider" min="50" max="150" value="100" step="1"
+            oninput="onPosSlider()" style="width:100%;margin-top:4px;">
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;padding:0 16px 16px;">
+      <button class="crop-reset-btn" onclick="closePosModal()">취소</button>
+      <button class="crop-confirm-btn" id="posConfirmBtn" onclick="confirmPos()">✓ 적용</button>
+    </div>
+  </div>
+</div>
+<div class="container">
+
+  <!-- 헤더 -->
+  <header>
+    <div class="logo-mark" style="background:none;clip-path:none;width:64px;height:64px;">
+      <img src="data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAGAAYADASIAAhEBAxEB/8QAHQABAAEFAQEBAAAAAAAAAAAAAAcDBAUGCAECCf/EAEoQAAEDAwIDBQQHBAYIBgMAAAEAAgMEBREGEgchMQgTQVFhFCJxgRUjMkKRodEzUlWxFhhik5TBCRckJVZyc5I0NnSDo+GywvH/xAAbAQEAAgMBAQAAAAAAAAAAAAAABAUBAgMGB//EAC8RAQACAgEDAwIFBAIDAAAAAAABAgMRBAUSIRMxURRBBiIyQlIVI2GRcYEzodH/2gAMAwEAAhEDEQA/AOMkREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEVaKAuaZJCY4x94jr6BVadrnvEVHC98rjgEgE/IeCCjHBK9u4Nw3ONziAPxK+yymjzukMrh4MGBn4rY7fpOtq2CW4VDoRgbR9p3wPktiodP2qkYwCmbK9o5vk5koI/7p+33bc/Pm4OKrMoK97A9lpJaeh2O/VSeMAAADA6ckyUEYm3XEDJtDsf8jv1Vs6FriGSRmmlJGMg4d+ilfJWta6tj6qlbWxY3U7SHADm4INDcC1xaeoOCvFdyMNUO+jaGvz9Z4NHr6L4xDHnbmZ/QcsNHr6oKUcb5HbY2Fx9AqhhiYPrZxn91g3fn0WWobHd65zfqnQQuxzPJoHnhbLbNK26mj/2lvtMhAznoD6INDIpQOszz8A39V6I4HnDJtp8ntx+YUmw2e1xM2MoYMercqzuemrZWEOEfs7x4xDGfTCCOpYpIyN7cZ6HqD818LM3m11NnlbDIBPC/mDg4+HoVjXQtewvgJO0Zcw9R+oQUEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERARFXZTkM72fdHH4cubvggpxRukdtYMnGfgFWjbFEc5E8meTW9B8eXNX1st9dcyY6GPu6fIa5x88fePitxsunKK3ujncHSVLRzJOWg+gQYCzaYq6x7Km4PDYTh20nm8Hy8lt1vt1FQMLKWBrAep6k/NXaICIiAiIgLxzQ5pa4ZBGCF7hUp6ingGZ544x/adhBrN+0s6oqmOtjIYIg3DgXYyc9VlrRYbfb8PZEJJRz3v5keYV7HXUMrtsdZA89cB4Vw0hzQ5rgQehB6oHhjwHQIiICIiDxzWPGHta4eRGVpGpdPvoN9woXHuw4uc3p3Y9PNbwvHtY9pa9oe09QRkFBE8jWzxd7G0CRv7Ro8Ry94BWy23VdidSOdcqHIZnL2jqD6ei1uSNkzTLEWhwbufGAeXPmR6ILZERAREQEREBERAREQEREBERAREQEREBERAREQEREBeta5zg1oJJ6AL6hifK/awZPj6K5jA3CmpTufIdrpOY8eg9EHxhtM4bml02M4PRv6lbFp7TL6sR19dIDE87gzqXj1P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" style="width:64px;height:64px;object-fit:contain;">
+    </div>
+    <div class="header-text">
+      <h1>프야선수사진 노예 <span style="font-size:1rem;color:var(--muted);letter-spacing:1px;">v1.6</span></h1>
+      <p>선수이미지 자동정렬 &amp; 카드생성 · 320×423px · JPG 출력 · Made by hansuru</p>
+    </div>
+  </header>
+
+  <!-- 설정 -->
+  <div class="settings-panel">
+    <div class="settings-title">⚙ 카드 설정</div>
+    <div class="settings-grid">
+      <div class="setting-item">
+        <label>얼굴 크기 비율 <span class="range-value" id="faceScaleVal">80%</span></label>
+        <input type="range" id="faceScale" min="40" max="90" value="80"
+          oninput="document.getElementById('faceScaleVal').textContent=this.value+'%'">
+      </div>
+      <div class="setting-item">
+        <label>얼굴 상단 여백 <span class="range-value" id="faceTopVal">14%</span></label>
+        <input type="range" id="faceTop" min="0" max="30" value="14"
+          oninput="document.getElementById('faceTopVal').textContent=this.value+'%'">
+      </div>
+      <div class="setting-item">
+        <label>출력 품질</label>
+        <input type="number" id="quality" min="0.5" max="1" step="0.05" value="1">
+      </div>
+      <div class="setting-item" style="grid-column:1/-1;">
+        <label>배경색 — KBO 구단 프리셋</label>
+        <div class="preset-grid" id="presetGrid">
+          <button class="preset-btn selected" data-color="#FFFFFF" onclick="selectPreset(this,'#FFFFFF')" style="display:none;">
+            <span class="preset-swatch" style="background:#FFFFFF;border:1px solid #ccc;"></span>
+            <span class="preset-name" style="color:#333;">흰색</span>
+          </button>
+          <button class="preset-btn" data-color="#3D3D3D" onclick="selectPreset(this,'#3D3D3D')">
+            <span class="preset-swatch" style="background:#3D3D3D;"></span>
+            <span class="preset-name">KT</span>
+          </button>
+          <button class="preset-btn" data-color="#0074CA" onclick="selectPreset(this,'#0074CA')">
+            <span class="preset-swatch" style="background:#0074CA;"></span>
+            <span class="preset-name">삼성</span>
+          </button>
+          <button class="preset-btn" data-color="#044781" onclick="selectPreset(this,'#044781')">
+            <span class="preset-swatch" style="background:#044781;"></span>
+            <span class="preset-name">NC</span>
+          </button>
+          <button class="preset-btn" data-color="#697983" onclick="selectPreset(this,'#697983')">
+            <span class="preset-swatch" style="background:#697983;"></span>
+            <span class="preset-name">두산</span>
+          </button>
+          <button class="preset-btn" data-color="#002D5D" onclick="selectPreset(this,'#002D5D')">
+            <span class="preset-swatch" style="background:#002D5D;"></span>
+            <span class="preset-name">롯데</span>
+          </button>
+          <button class="preset-btn" data-color="#C4213A" onclick="selectPreset(this,'#C4213A')">
+            <span class="preset-swatch" style="background:#C4213A;"></span>
+            <span class="preset-name">KIA</span>
+          </button>
+          <button class="preset-btn" data-color="#854058" onclick="selectPreset(this,'#854058')">
+            <span class="preset-swatch" style="background:#854058;"></span>
+            <span class="preset-name">키움</span>
+          </button>
+          <button class="preset-btn" data-color="#9B0019" onclick="selectPreset(this,'#9B0019')">
+            <span class="preset-swatch" style="background:#9B0019;"></span>
+            <span class="preset-name">SSG</span>
+          </button>
+          <button class="preset-btn" data-color="#606060" onclick="selectPreset(this,'#606060')">
+            <span class="preset-swatch" style="background:#606060;"></span>
+            <span class="preset-name">LG</span>
+          </button>
+          <button class="preset-btn" data-color="#FE7427" onclick="selectPreset(this,'#FE7427')">
+            <span class="preset-swatch" style="background:#FE7427;"></span>
+            <span class="preset-name">한화</span>
+          </button>
+          <button class="preset-btn" id="customPresetBtn" data-color="#FFFFFF" onclick="document.getElementById('bgColorInit').click()">
+            <span class="preset-swatch" id="customSwatch" style="background:#FFFFFF;border:1px solid #555;"></span>
+            <span class="preset-name">직접</span>
+          </button>
+        </div>
+        <input type="color" id="bgColorInit" value="#ffffff" oninput="syncBgColor(this.value);updateCustomSwatch(this.value)" style="width:0;height:0;opacity:0;position:absolute;pointer-events:none;">
+      </div>
+    </div>
+  </div>
+
+  <!-- 드롭존 -->
+  <div class="drop-zone" id="dropZone">
+    <input type="file" id="fileInput" multiple accept=".png,.jpg,.jpeg,.webp">
+    <span class="drop-icon">📂</span>
+    <h3>선수 PNG 파일을 여기에 드래그하거나 클릭해서 선택</h3>
+    <p>PNG / JPG / WEBP · 여러 파일 한번에 선택 가능</p>
+    <span id="fileCountBadge" class="file-count-badge" style="display:none"></span>
+  </div>
+
+  <!-- 실행 버튼 -->
+  <button class="run-btn" id="runBtn" disabled onclick="startProcessing()">
+    🚀 카드 자동 생성 시작
+  </button>
+
+  <!-- 진행 상태 -->
+  <div class="progress-section" id="progressSection">
+    <div class="progress-header">
+      <span class="progress-label">처리 중...</span>
+      <span class="progress-count" id="progressCount">0 / 0</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressBar"></div>
+    </div>
+    <div class="progress-log" id="progressLog"></div>
+  </div>
+
+  <!-- 결과 미리보기 -->
+  <div class="preview-section" id="previewSection">
+    <div class="stats-bar" id="statsBar"></div>
+    <div class="section-header">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <span class="section-title">생성 결과 미리보기</span>
+        <span class="selected-count" id="selectedCount"></span>
+        <button onclick="toggleGuides()" id="guideToggleBtn" style="background:var(--accent);color:#fff;border:1px solid var(--accent);padding:4px 10px;font-size:0.68rem;cursor:pointer;">⊞ 가이드 OFF</button>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:0.72rem;color:var(--muted);">배경색</span>
+          <input type="color" id="bgColor" value="#ffffff" oninput="syncBgColor(this.value)" style="width:32px;height:28px;border:1px solid var(--border);cursor:pointer;padding:2px;background:var(--surface2);">
+          <div style="display:flex;gap:4px;align-items:center;">
+            <button class="dot-preset" style="background:#3D3D3D;" onclick="selectPreset(null,'#3D3D3D')" title="KT"></button>
+            <button class="dot-preset" style="background:#0074CA;" onclick="selectPreset(null,'#0074CA')" title="삼성"></button>
+            <button class="dot-preset" style="background:#044781;" onclick="selectPreset(null,'#044781')" title="NC"></button>
+            <button class="dot-preset" style="background:#697983;" onclick="selectPreset(null,'#697983')" title="두산"></button>
+            <button class="dot-preset" style="background:#002D5D;" onclick="selectPreset(null,'#002D5D')" title="롯데"></button>
+            <button class="dot-preset" style="background:#C4213A;" onclick="selectPreset(null,'#C4213A')" title="KIA"></button>
+            <button class="dot-preset" style="background:#854058;" onclick="selectPreset(null,'#854058')" title="키움"></button>
+            <button class="dot-preset" style="background:#9B0019;" onclick="selectPreset(null,'#9B0019')" title="SSG"></button>
+            <button class="dot-preset" style="background:#606060;" onclick="selectPreset(null,'#606060')" title="LG"></button>
+            <button class="dot-preset" style="background:#FE7427;" onclick="selectPreset(null,'#FE7427')" title="한화"></button>
+          </div>
+        </div>
+        <button class="download-all-btn" id="downloadAllBtn">⬇ JPG ZIP</button>
+        <button class="download-all-btn" id="downloadPngBtn" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);">⬇ PNG ZIP (배경제거)</button>
+      </div>
+    </div>
+    <div class="preview-grid" id="previewGrid"></div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+// ── 인라인 경량 ZIP 생성기 (CDN 불필요) ──────────────────
+const MiniZip = (() => {
+  function crc32(buf) {
+    const t = new Int32Array(256);
+    for (let i=0;i<256;i++){let c=i;for(let j=0;j<8;j++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[i]=c;}
+    let c=-1;
+    for (let i=0;i<buf.length;i++) c=t[(c^buf[i])&0xFF]^(c>>>8);
+    return (c^-1)>>>0;
+  }
+  function u32(n){return new Uint8Array([n&0xFF,(n>>8)&0xFF,(n>>16)&0xFF,(n>>24)&0xFF]);}
+  function u16(n){return new Uint8Array([n&0xFF,(n>>8)&0xFF]);}
+  function str2buf(s){return new TextEncoder().encode(s);}
+
+  return {
+    async generate(files) {
+      // files: [{name, blob}, ...]
+      const entries = [];
+      for (const {name, blob} of files) {
+        const data = new Uint8Array(await blob.arrayBuffer());
+        const nameBuf = str2buf(name);
+        const crc = crc32(data);
+        const offset = entries.reduce((s,e)=>s+e.localSize,0);
+        const local = new Uint8Array([
+          0x50,0x4B,0x03,0x04, // sig
+          20,0, 0,0, 0,0,      // version, flag, method(store)
+          0,0,0,0,             // mod time/date
+          ...u32(crc),
+          ...u32(data.length), ...u32(data.length),
+          ...u16(nameBuf.length), 0,0,
+          ...nameBuf,
+          ...data
+        ]);
+        entries.push({nameBuf, crc, size:data.length, offset, local, localSize:local.length});
+      }
+      const centralDir = entries.map(e => new Uint8Array([
+        0x50,0x4B,0x01,0x02,
+        20,0,20,0, 0,0, 0,0, 0,0,0,0,
+        ...u32(e.crc),
+        ...u32(e.size), ...u32(e.size),
+        ...u16(e.nameBuf.length), 0,0,0,0,0,0,0,0,0,0,0,0,
+        ...u32(e.offset),
+        ...e.nameBuf
+      ]));
+      const cdOffset = entries.reduce((s,e)=>s+e.localSize,0);
+      const cdSize   = centralDir.reduce((s,b)=>s+b.length,0);
+      const eocd = new Uint8Array([
+        0x50,0x4B,0x05,0x06,0,0,0,0,
+        ...u16(entries.length), ...u16(entries.length),
+        ...u32(cdSize), ...u32(cdOffset),
+        0,0
+      ]);
+      const total = cdOffset + cdSize + eocd.length;
+      const out = new Uint8Array(total);
+      let pos=0;
+      for (const e of entries){out.set(e.local,pos);pos+=e.localSize;}
+      for (const cd of centralDir){out.set(cd,pos);pos+=cd.length;}
+      out.set(eocd,pos);
+      return new Blob([out],{type:'application/zip'});
+    }
+  };
+})();
+</script>
+<script>
+const CARD_W = 320, CARD_H = 423;
+
+let selectedFiles = [];
+let results = [];
+
+// ── 배경색 동기화 ──────────────────────────────────────
+function getBgColor() {
+  return document.getElementById('bgColor').value;
+}
+function syncBgColor(val) {
+  document.getElementById('bgColor').value = val;
+  document.getElementById('bgColorInit').value = val;
+  if (results.length > 0) reapplyBgColor();
+}
+function selectPreset(btn, color) {
+  // 설정 패널 프리셋 선택 표시
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('selected'));
+  if (btn) btn.classList.add('selected');
+  syncBgColor(color);
+}
+function updateCustomSwatch(val) {
+  const swatch = document.getElementById('customSwatch');
+  if (swatch) swatch.style.background = val;
+  // 직접 선택 시 커스텀 버튼 활성화
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('selected'));
+  const customBtn = document.getElementById('customPresetBtn');
+  if (customBtn) customBtn.classList.add('selected');
+}
+
+// ── 파일 선택 ──────────────────────────────────────────
+document.getElementById('fileInput').addEventListener('change', e => {
+  handleFiles(Array.from(e.target.files));
+});
+const dropZone = document.getElementById('dropZone');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('dragover');
+  handleFiles(Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/')));
+});
+function handleFiles(files) {
+  selectedFiles = files;
+  const badge = document.getElementById('fileCountBadge');
+  if (files.length > 0) {
+    badge.style.display = 'inline-block';
+    badge.textContent = `${files.length}개 파일 선택됨`;
+    document.getElementById('runBtn').disabled = false;
+  }
+}
+function loadImage(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => { resolve(img); URL.revokeObjectURL(url); };
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
+// ── 픽셀 분석 유틸 ────────────────────────────────────
+function getImageData(img, scaleMax = 500) {
+  const SCALE = Math.min(1, scaleMax / Math.max(img.naturalWidth, img.naturalHeight));
+  const W = Math.round(img.naturalWidth  * SCALE);
+  const H = Math.round(img.naturalHeight * SCALE);
+  const c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  c.getContext('2d').drawImage(img, 0, 0, W, H);
+  return { data: c.getContext('2d').getImageData(0,0,W,H).data, W, H, SCALE };
+}
+
+function getCornerColor(data, W, H) {
+  const px = (x,y) => { const i=(y*W+x)*4; return [data[i],data[i+1],data[i+2],data[i+3]]; };
+  const corners = [px(0,0), px(W-1,0), px(0,H-1), px(W-1,H-1)];
+  return {
+    r: corners.reduce((s,c)=>s+c[0],0)/4,
+    g: corners.reduce((s,c)=>s+c[1],0)/4,
+    b: corners.reduce((s,c)=>s+c[2],0)/4,
+  };
+}
+
+function isSkinPixel(r, g, b) {
+  // 피부색 - 흰 유니폼 오인 방지 (엄격한 조건)
+  if (r + g + b > 650) return false; // 너무 밝으면 흰옷
+  if (r + g + b < 100) return false; // 너무 어두우면 제외
+  return r > 100 && g > 50 && b > 30
+    && r > g && r > b
+    && (r - b) > 25          // R-B 차이 강화
+    && (r - g) > 10
+    && g > b                 // G > B 추가
+    && r < 240;
+}
+
+// ── 인물 bounding box ────────────────────────────────
+function getSubjectBBox(data, W, H, bgR, bgG, bgB) {
+  const isDark = (bgR < 40 && bgG < 40 && bgB < 40);
+  let minX=W, maxX=0, minY=H, maxY=0;
+  for (let y=0; y<H; y++) {
+    for (let x=0; x<W; x++) {
+      const i=(y*W+x)*4;
+      const r=data[i], g=data[i+1], b=data[i+2], a=data[i+3];
+      if (a < 20) continue;
+      const isFg = isDark
+        ? (r+g+b) > 90
+        : Math.max(Math.abs(r-bgR), Math.abs(g-bgG), Math.abs(b-bgB)) > 20;
+      if (isFg) {
+        if (x<minX) minX=x; if (x>maxX) maxX=x;
+        if (y<minY) minY=y; if (y>maxY) maxY=y;
+      }
+    }
+  }
+  return (minX<maxX && minY<maxY) ? {minX,maxX,minY,maxY} : null;
+}
+
+// ── 핵심: 얼굴 영역 감지 ──────────────────────────────
+// ── 배경 제거 → 투명 PNG Image 반환 ─────────────────
+function removeBg(img) {
+  return new Promise(resolve => {
+    const { data, W, H, SCALE } = getImageData(img, 480);
+    const bg = getCornerColor(data, W, H);
+    const isDark = (bg.r < 40 && bg.g < 40 && bg.b < 40);
+    const mask = new Uint8Array(W * H);
+    const queue = [];
+
+    function isBg(i) {
+      const r=data[i],g=data[i+1],b=data[i+2],a=data[i+3];
+      if (a < 20) return true;
+      if (isDark) return (r+g+b) < 90;
+      return Math.max(Math.abs(r-bg.r),Math.abs(g-bg.g),Math.abs(b-bg.b)) < 40;
+    }
+
+    const seeds = [];
+    for (let x=0;x<W;x++){seeds.push([x,0]);seeds.push([x,H-1]);}
+    for (let y=0;y<H;y++){seeds.push([0,y]);seeds.push([W-1,y]);}
+    for (const [sx,sy] of seeds) {
+      const idx=sy*W+sx;
+      if (!mask[idx]&&isBg(idx*4)){mask[idx]=255;queue.push(idx);}
+    }
+    const dx=[1,-1,0,0],dy=[0,0,1,-1];
+    let qi=0;
+    while (qi<queue.length) {
+      const cur=queue[qi++];
+      const cx=cur%W,cy=(cur/W)|0;
+      for (let d=0;d<4;d++){
+        const nx=cx+dx[d],ny=cy+dy[d];
+        if (nx<0||nx>=W||ny<0||ny>=H) continue;
+        const ni=ny*W+nx;
+        if (!mask[ni]&&isBg(ni*4)){mask[ni]=255;queue.push(ni);}
+      }
+    }
+
+    const ow=img.naturalWidth,oh=img.naturalHeight;
+    const out=document.createElement('canvas');
+    out.width=ow;out.height=oh;
+    const octx=out.getContext('2d');
+    octx.drawImage(img,0,0);
+    const outData=octx.getImageData(0,0,ow,oh);
+    const od=outData.data;
+    for (let y=0;y<oh;y++) for (let x=0;x<ow;x++) {
+      const mx=Math.min(W-1,Math.round(x*SCALE));
+      const my=Math.min(H-1,Math.round(y*SCALE));
+      if (mask[my*W+mx]) od[(y*ow+x)*4+3]=0;
+    }
+    octx.putImageData(outData,0,0);
+    const result=new Image();
+    result.onload=()=>resolve(result);
+    result.src=out.toDataURL('image/png');
+  });
+}
+
+function detectFaceRegion(img) {
+  const { data, W, H, SCALE } = getImageData(img, 480);
+  const bg = getCornerColor(data, W, H);
+  const bbox = getSubjectBBox(data, W, H, bg.r, bg.g, bg.b);
+  if (!bbox) return null;
+
+  const { minX, maxX, minY, maxY } = bbox;
+  const objW = maxX - minX;
+  const objH = maxY - minY;
+
+  // 상단 52% 이내에서만 피부색 탐색 (얼굴+목 영역)
+  const searchBottom = Math.min(H, minY + objH * 0.52);
+
+  // 피부색 픽셀 수집
+  const skinPixels = [];
+  for (let y = minY; y < searchBottom; y++) {
+    for (let x = minX; x < maxX; x++) {
+      const i = (y*W+x)*4;
+      if (data[i+3] < 20) continue;
+      if (isSkinPixel(data[i], data[i+1], data[i+2])) {
+        skinPixels.push({x, y});
+      }
+    }
+  }
+
+  if (skinPixels.length < 50) {
+    // 피부 감지 실패 → 인물 상단 38% fallback
+    return {
+      fx: (minX + objW*0.12) / SCALE,
+      fy: minY / SCALE,
+      fw: (objW * 0.76) / SCALE,
+      fh: (objH * 0.38) / SCALE,
+    };
+  }
+
+  // 피부 픽셀 bounding box
+  let sMinX = W, sMaxX = 0, sMinY = H, sMaxY = 0;
+  for (const {x,y} of skinPixels) {
+    if (x<sMinX) sMinX=x; if (x>sMaxX) sMaxX=x;
+    if (y<sMinY) sMinY=y; if (y>sMaxY) sMaxY=y;
+  }
+
+  const skinW = sMaxX - sMinX;
+  const skinH = sMaxY - sMinY;
+
+  // 모자 공간(위) + 좌우 여유 추가
+  const padX    = skinW * 0.22;
+  const padYTop = skinH * 0.62;  // 모자 높이만큼 위로
+  const padYBot = skinH * 0.05;
+
+  const fx = Math.max(minX, sMinX - padX);
+  const fy = Math.max(minY, sMinY - padYTop);
+  const fw = Math.min(maxX, sMaxX + padX) - fx;
+  const fh = Math.min(searchBottom, sMaxY + padYBot) - fy;
+
+  return { fx: fx/SCALE, fy: fy/SCALE, fw: fw/SCALE, fh: fh/SCALE };
+}
+
+// ── 카드 생성 ────────────────────────────────────────
+async function generateCard(img, filename) {
+  const bgColor   = getBgColor();
+  const faceScale = parseInt(document.getElementById('faceScale').value) / 100;
+  const faceTop   = parseInt(document.getElementById('faceTop').value)   / 100;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = CARD_W; canvas.height = CARD_H;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = bgColor;
+  ctx.fillRect(0, 0, CARD_W, CARD_H);
+
+  const face = detectFaceRegion(img);
+  let dx, dy, dw, dh;
+
+  if (face) {
+    const { fx, fy, fw } = face;
+    const scale  = (CARD_W * faceScale) / fw;
+    dw = img.naturalWidth  * scale;
+    dh = img.naturalHeight * scale;
+    dx = CARD_W * 0.5  - (fx + fw/2) * scale;
+    dy = CARD_H * faceTop - fy * scale;
+  } else {
+    const scale = CARD_W / img.naturalWidth;
+    dw = CARD_W; dh = img.naturalHeight * scale;
+    dx = 0; dy = 0;
+  }
+
+  ctx.drawImage(img, dx, dy, dw, dh);
+
+  // JPG 출력
+  const out = document.createElement('canvas');
+  out.width = CARD_W; out.height = CARD_H;
+  const octx = out.getContext('2d');
+  octx.fillStyle = bgColor;
+  octx.fillRect(0, 0, CARD_W, CARD_H);
+  octx.drawImage(canvas, 0, 0);
+
+  const jpgName = filename.replace(/\.(png|jpg|jpeg|webp)$/i, '.jpg');
+  const quality = parseFloat(document.getElementById('quality').value) || 0.95;
+  return new Promise(resolve => {
+    out.toBlob(blob => resolve({ name: jpgName, blob }), 'image/jpeg', quality);
+  });
+}
+
+// ── 로그 ─────────────────────────────────────────────
+function log(msg, type='') {
+  const el = document.getElementById('progressLog');
+  const line = document.createElement('div');
+  line.className = type ? `log-${type}` : '';
+  line.textContent = msg;
+  el.appendChild(line);
+  el.scrollTop = el.scrollHeight;
+}
+
+// ── 처리 시작 ─────────────────────────────────────────
+async function startProcessing() {
+  if (!selectedFiles.length) return;
+  results = [];
+  document.getElementById('progressSection').style.display = 'block';
+  document.getElementById('previewSection').style.display  = 'none';
+  document.getElementById('previewGrid').innerHTML = '';
+  document.getElementById('progressLog').innerHTML = '';
+  document.getElementById('runBtn').disabled = true;
+
+  const total = selectedFiles.length;
+  let done=0, noFace=0, errors=0;
+
+  for (const file of selectedFiles) {
+    try {
+      const img    = await loadImage(file);
+      const face   = detectFaceRegion(img);
+      const result = await generateCard(img, file.name);
+      // 원본 파일도 함께 보관 (제외시 원본 다운용)
+      result.originalFile = file;
+      results.push(result);
+      if (!face) { noFace++; log(`△ ${file.name} (얼굴미감지→전체맞춤)`, 'warn'); }
+      else        { log(`✓ ${file.name}`, 'ok'); }
+    } catch(e) {
+      errors++;
+      log(`✗ ${file.name}: ${e.message}`, 'err');
+    }
+    done++;
+    document.getElementById('progressBar').style.width = Math.round(done/total*100)+'%';
+    document.getElementById('progressCount').textContent = `${done} / ${total}`;
+    // UI 블로킹 방지
+    if (done % 10 === 0) await new Promise(r => setTimeout(r, 0));
+  }
+
+  log(`\n완료! 성공 ${results.length}개 / 오류 ${errors}개 / 얼굴미감지 ${noFace}개`);
+  showResults(total, errors, noFace);
+}
+
+// ── 결과 표시 ─────────────────────────────────────────
+function updateSelectedCount() {
+  const total = results.length;
+  const excluded = document.querySelectorAll('.preview-card.excluded').length;
+  const sel = total - excluded;
+  document.getElementById('selectedCount').textContent = `${sel}개 선택 / ${total}개`;
+}
+
+// ── 가이드라인 ──────────────────────────────────────
+let guidesVisible = true;
+// v1.5 박스 가이드: 상단 52px, 중앙 247×247
+const BOX_GUIDE = { x: Math.round((320 - 247) / 2), y: 52, w: 247, h: 247 };
+
+function drawGuideCanvas(canvas) {
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, 320, 423);
+  if (!guidesVisible) return;
+  // 박스
+  ctx.strokeStyle = 'rgba(30,160,255,0.95)';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(BOX_GUIDE.x, BOX_GUIDE.y, BOX_GUIDE.w, BOX_GUIDE.h);
+  // 상단 여백 점선
+  ctx.setLineDash([4, 3]);
+  ctx.beginPath(); ctx.moveTo(0, BOX_GUIDE.y); ctx.lineTo(320, BOX_GUIDE.y); ctx.stroke();
+  ctx.setLineDash([]);
+  // 코너 핸들
+  const cs = 7;
+  ctx.fillStyle = 'rgba(30,160,255,1)';
+  [[BOX_GUIDE.x, BOX_GUIDE.y], [BOX_GUIDE.x + BOX_GUIDE.w, BOX_GUIDE.y],
+   [BOX_GUIDE.x, BOX_GUIDE.y + BOX_GUIDE.h], [BOX_GUIDE.x + BOX_GUIDE.w, BOX_GUIDE.y + BOX_GUIDE.h]
+  ].forEach(([cx, cy]) => ctx.fillRect(cx - cs/2, cy - cs/2, cs, cs));
+  // 치수 라벨
+  ctx.fillStyle = 'rgba(30,160,255,0.9)';
+  ctx.font = '9px monospace';
+  ctx.fillText('52px', 3, BOX_GUIDE.y - 3);
+  ctx.fillText('247px', BOX_GUIDE.x + 2, BOX_GUIDE.y + 13);
+}
+
+function toggleGuides() {
+  guidesVisible = !guidesVisible;
+  const btn = document.getElementById('guideToggleBtn');
+  btn.textContent = guidesVisible ? '⊞ 가이드 OFF' : '⊞ 가이드 ON';
+  btn.style.color = guidesVisible ? '#fff' : 'var(--accent)';
+  btn.style.background = guidesVisible ? 'var(--accent)' : 'var(--surface2)';
+  document.querySelectorAll('.guide-canvas').forEach(c => drawGuideCanvas(c));
+}
+
+function showResults(total, errors, noFace) {
+  document.getElementById('runBtn').disabled = false;
+  document.getElementById('previewSection').style.display = 'block';
+  document.getElementById('statsBar').innerHTML = `
+    <div class="stat"><div class="stat-num">${results.length}</div><div class="stat-label">완료</div></div>
+    <div class="stat"><div class="stat-num">${errors}</div><div class="stat-label">오류</div></div>
+    <div class="stat"><div class="stat-num">${noFace}</div><div class="stat-label">얼굴미감지</div></div>
+    <div class="stat"><div class="stat-num">${total}</div><div class="stat-label">전체</div></div>`;
+
+  const grid = document.getElementById('previewGrid');
+  results.forEach(({ name, blob }, idx) => {
+    const url = URL.createObjectURL(blob);
+    const card = document.createElement('div');
+    card.className = 'preview-card';
+    card.dataset.idx = idx;
+    card.innerHTML = `<img src="${url}" alt="${name}"><canvas class="guide-canvas" width="320" height="423"></canvas><div class="preview-card-name">${name}</div>
+      <div class="card-overlay">
+        <button class="btn-crop">✂ 원본 크롭 후 재생성</button>
+        <button class="btn-pos">↕ 위치 조정</button>
+        <button class="btn-dl">⬇ 개별 저장</button>
+      </div>`;
+    drawGuideCanvas(card.querySelector('.guide-canvas'));
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.card-overlay')) return;
+      card.classList.toggle('excluded');
+      updateSelectedCount();
+    });
+    card.querySelector('.btn-crop').addEventListener('click', (e) => {
+      e.stopPropagation(); openCropModal(idx);
+    });
+    card.querySelector('.btn-pos').addEventListener('click', (e) => {
+      e.stopPropagation(); openPosModal(idx);
+    });
+    card.querySelector('.btn-dl').addEventListener('click', (e) => {
+      e.stopPropagation(); downloadSingle(idx);
+    });
+    grid.appendChild(card);
+  });
+
+  updateSelectedCount();
+  document.getElementById('downloadAllBtn').onclick = downloadZip;
+  document.getElementById('downloadPngBtn').onclick = downloadPngZip;
+}
+
+// ── 전체 ZIP 다운로드 ──────────────────────────────────────
+async function downloadZip() {
+  const btn = document.getElementById('downloadAllBtn');
+  btn.textContent = '압축 중...'; btn.disabled = true;
+  const files = [];
+  results.forEach(({ name, blob }, idx) => {
+    const card = document.querySelector(`.preview-card[data-idx="${idx}"]`);
+    if (!card?.classList.contains('excluded')) files.push({ name, blob });
+  });
+  const content = await MiniZip.generate(files);
+  const url = URL.createObjectURL(content);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'player_cards.zip'; a.click();
+  URL.revokeObjectURL(url);
+  btn.textContent = '⬇ JPG ZIP'; btn.disabled = false;
+}
+
+// ── PNG(배경제거) ZIP 다운로드 ────────────────────────────
+async function downloadPngZip() {
+  const btn = document.getElementById('downloadPngBtn');
+  btn.textContent = '생성 중...'; btn.disabled = true;
+
+  const faceScale = parseInt(document.getElementById('faceScale').value) / 100;
+  const faceTop   = parseInt(document.getElementById('faceTop').value) / 100;
+  const pngFiles = [];
+  for (const r of results) {
+    if (!r.originalFile) continue;
+
+    const img = await new Promise(res => {
+      const im = new Image();
+      im.onload = () => res(im);
+      // 크롭 재생성된 경우 크롭 이미지 우선, 아니면 원본
+      im.src = r.croppedDataUrl || URL.createObjectURL(r.originalFile);
+    });
+
+    // 투명 배경 카드 렌더링 (원본 그대로, 배경제거 없이)
+    const canvas = document.createElement('canvas');
+    canvas.width = CARD_W; canvas.height = CARD_H;
+    const ctx = canvas.getContext('2d');
+    // fillRect 없이 투명 유지
+
+    const face = detectFaceRegion(img);
+    if (face) {
+      const { fx, fy, fw } = face;
+      const scale = (CARD_W * faceScale) / fw;
+      ctx.drawImage(img,
+        CARD_W * 0.5 - (fx + fw/2) * scale,
+        CARD_H * faceTop - fy * scale,
+        img.naturalWidth * scale,
+        img.naturalHeight * scale
+      );
+    } else {
+      const scale = CARD_W / img.naturalWidth;
+      ctx.drawImage(img, 0, 0, img.naturalWidth * scale, img.naturalHeight * scale);
+    }
+
+    const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+    const pngName = r.name.replace(/\.(jpg|jpeg|webp)$/i, '.png');
+    pngFiles.push({ name: pngName, blob });
+  }
+
+  const content = await MiniZip.generate(pngFiles);
+  const url = URL.createObjectURL(content);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'player_cards_nobg.zip'; a.click();
+  URL.revokeObjectURL(url);
+  btn.textContent = '⬇ PNG ZIP (배경제거)'; btn.disabled = false;
+}
+
+
+let cropIdx = -1;
+let cropImg = null;
+let cropDispScale = 1;   // 원본→캔버스 표시 배율
+let cropBox = null;      // {x,y,w,h} 캔버스 좌표
+let cropDragging = false;
+let cropDragStart = {x:0, y:0};
+
+async function openCropModal(idx) {
+  cropIdx = idx;
+  const r = results[idx];
+  document.getElementById('cropModalName').textContent = `✂ ${r.name}`;
+
+  cropImg = await new Promise(res => {
+    const im = new Image();
+    im.onload = () => res(im);
+    im.src = URL.createObjectURL(r.originalFile);
+  });
+
+  // 캔버스 크기: 모달 너비에 맞게
+  const maxW = Math.min(520, window.innerWidth - 60);
+  const maxH = Math.round(window.innerHeight * 0.55);
+  cropDispScale = Math.min(maxW / cropImg.naturalWidth, maxH / cropImg.naturalHeight, 1);
+  const cw = Math.round(cropImg.naturalWidth  * cropDispScale);
+  const ch = Math.round(cropImg.naturalHeight * cropDispScale);
+
+  const canvas = document.getElementById('cropCanvas');
+  canvas.width = cw; canvas.height = ch;
+  canvas.getContext('2d').drawImage(cropImg, 0, 0, cw, ch);
+
+  cropBox = null;
+  document.getElementById('cropOverlay').style.display = 'none';
+  clearCropPreview();
+
+  const wrap = document.getElementById('cropCanvasWrap');
+  wrap.onmousedown  = cropMouseDown;
+  wrap.onmousemove  = cropMouseMove;
+  wrap.onmouseup    = cropMouseUp;
+  wrap.ontouchstart = e => { e.preventDefault(); cropMouseDown(e.touches[0]); };
+  wrap.ontouchmove  = e => { e.preventDefault(); cropMouseMove(e.touches[0]); };
+  wrap.ontouchend   = e => cropMouseUp(e.changedTouches[0]);
+
+  document.getElementById('cropModalBg').classList.add('open');
+  const btn = document.getElementById('cropConfirmBtn');
+  btn.textContent = '✓ 재생성'; btn.disabled = false;
+}
+
+function getCropPos(e) {
+  const rect = document.getElementById('cropCanvas').getBoundingClientRect();
+  return {
+    x: Math.max(0, Math.min(rect.width,  e.clientX - rect.left)),
+    y: Math.max(0, Math.min(rect.height, e.clientY - rect.top))
+  };
+}
+
+function cropMouseDown(e) {
+  cropDragging = true;
+  cropDragStart = getCropPos(e);
+  cropBox = null;
+  document.getElementById('cropOverlay').style.display = 'none';
+  clearCropPreview();
+}
+
+function cropMouseMove(e) {
+  if (!cropDragging) return;
+  const p = getCropPos(e);
+  const x = Math.min(cropDragStart.x, p.x);
+  const y = Math.min(cropDragStart.y, p.y);
+  const w = Math.abs(p.x - cropDragStart.x);
+  const h = Math.abs(p.y - cropDragStart.y);
+
+  const canvasRect = document.getElementById('cropCanvas').getBoundingClientRect();
+  const wrapRect   = document.getElementById('cropCanvasWrap').getBoundingClientRect();
+  const offX = canvasRect.left - wrapRect.left;
+  const offY = canvasRect.top  - wrapRect.top;
+
+  const ov = document.getElementById('cropOverlay');
+  ov.style.display = 'block';
+  ov.style.left   = (x + offX) + 'px';
+  ov.style.top    = (y + offY) + 'px';
+  ov.style.width  = w + 'px';
+  ov.style.height = h + 'px';
+  cropBox = {x, y, w, h};
+}
+
+function cropMouseUp() {
+  cropDragging = false;
+  if (cropBox && cropBox.w < 5) {
+    cropBox = null;
+    document.getElementById('cropOverlay').style.display = 'none';
+    return;
+  }
+  if (cropBox) updateCropPreview(); // 드래그 끝나면 얼굴감지 프리뷰
+}
+
+function resetCropDrag() {
+  cropBox = null;
+  document.getElementById('cropOverlay').style.display = 'none';
+  clearCropPreview();
+}
+
+function clearCropPreview() {
+  const pc = document.getElementById('cropPreviewCanvas');
+  const ctx = pc.getContext('2d');
+  ctx.fillStyle = getBgColor();
+  ctx.fillRect(0, 0, pc.width, pc.height);
+}
+
+async function updateCropPreview() {
+  if (!cropBox || !cropImg) return;
+  const sx = Math.round(cropBox.x / cropDispScale);
+  const sy = Math.round(cropBox.y / cropDispScale);
+  const sw = Math.round(cropBox.w / cropDispScale);
+  const sh = Math.round(cropBox.h / cropDispScale);
+
+  // 선택 영역 잘라내기
+  const tmpCanvas = document.createElement('canvas');
+  tmpCanvas.width = sw; tmpCanvas.height = sh;
+  tmpCanvas.getContext('2d').drawImage(cropImg, sx, sy, sw, sh, 0, 0, sw, sh);
+
+  const croppedImg = await new Promise(res => {
+    const im = new Image();
+    im.onload = () => res(im);
+    im.src = tmpCanvas.toDataURL();
+  });
+
+  // 프리뷰 캔버스에 generateCard 결과 표시
+  const pc  = document.getElementById('cropPreviewCanvas');
+  const ctx = pc.getContext('2d');
+  const bg  = getBgColor();
+
+  // 임시 카드 생성 (CARD 크기 → 프리뷰 축소)
+  const tmpCard = document.createElement('canvas');
+  tmpCard.width = CARD_W; tmpCard.height = CARD_H;
+  const tCtx = tmpCard.getContext('2d');
+  tCtx.fillStyle = bg; tCtx.fillRect(0, 0, CARD_W, CARD_H);
+
+  const faceScale = parseInt(document.getElementById('faceScale').value) / 100;
+  const faceTop   = parseInt(document.getElementById('faceTop').value)   / 100;
+  const face = detectFaceRegion(croppedImg);
+
+  if (face) {
+    const { fx, fy, fw } = face;
+    const s = (CARD_W * faceScale) / fw;
+    tCtx.drawImage(croppedImg,
+      CARD_W * 0.5 - (fx + fw/2) * s,
+      CARD_H * faceTop - fy * s,
+      croppedImg.naturalWidth * s,
+      croppedImg.naturalHeight * s
+    );
+  } else {
+    const s = CARD_W / croppedImg.naturalWidth;
+    tCtx.drawImage(croppedImg, 0, 0, croppedImg.naturalWidth * s, croppedImg.naturalHeight * s);
+  }
+
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, pc.width, pc.height);
+  ctx.drawImage(tmpCard, 0, 0, pc.width, pc.height);
+
+  // 가이드라인 (320×423 기준 → 프리뷰 스케일)
+  const scaleX = pc.width  / CARD_W;
+  const scaleY = pc.height / CARD_H;
+  const guideX = [74, 160, 246];
+  const guideY = [66, 300, 357];
+  ctx.save();
+  ctx.strokeStyle = 'rgba(0,220,255,0.85)';
+  ctx.lineWidth = 0.7;
+  for (const x of guideX) { ctx.beginPath(); ctx.moveTo(x*scaleX,0); ctx.lineTo(x*scaleX,pc.height); ctx.stroke(); }
+  for (const y of guideY) { ctx.beginPath(); ctx.moveTo(0,y*scaleY); ctx.lineTo(pc.width,y*scaleY); ctx.stroke(); }
+  ctx.fillStyle = 'rgba(0,220,255,0.9)';
+  for (const x of guideX) for (const y of guideY) { ctx.beginPath(); ctx.arc(x*scaleX,y*scaleY,1.2,0,Math.PI*2); ctx.fill(); }
+  ctx.restore();
+}
+
+async function confirmCrop() {
+  if (!cropBox || cropBox.w < 5) { alert('먼저 드래그해서 크롭 영역을 선택하세요!'); return; }
+
+  // 비동기 작업 전에 필요한 값 모두 로컬에 저장 (모달 닫혀도 안전)
+  const btn = document.getElementById('cropConfirmBtn');
+  const savedIdx = cropIdx;
+  const savedImg = cropImg;
+  const savedBox = { ...cropBox };
+  const savedScale = cropDispScale;
+
+  btn.textContent = '재생성 중...'; btn.disabled = true;
+  await new Promise(r => setTimeout(r, 30));
+
+  try {
+    const sx = Math.round(savedBox.x / savedScale);
+    const sy = Math.round(savedBox.y / savedScale);
+    const sw = Math.round(savedBox.w / savedScale);
+    const sh = Math.round(savedBox.h / savedScale);
+
+    const quality = parseFloat(document.getElementById('quality').value) || 0.95;
+
+    const tmpCanvas = document.createElement('canvas');
+    tmpCanvas.width = sw; tmpCanvas.height = sh;
+    tmpCanvas.getContext('2d').drawImage(savedImg, sx, sy, sw, sh, 0, 0, sw, sh);
+
+    const croppedImg = await new Promise(res => {
+      const im = new Image();
+      im.onload = () => res(im);
+      im.src = tmpCanvas.toDataURL();
+    });
+
+    const result = await generateCard(croppedImg, results[savedIdx].name);
+
+    results[savedIdx].blob = result.blob;
+    results[savedIdx].croppedDataUrl = tmpCanvas.toDataURL();
+    results[savedIdx].posOffX = 0;
+    results[savedIdx].posOffY = 0;
+    const card = document.querySelector(`.preview-card[data-idx="${savedIdx}"]`);
+    card.querySelector('img').src = URL.createObjectURL(result.blob);
+    drawGuideCanvas(card.querySelector('.guide-canvas'));
+    card.classList.remove('excluded');
+    updateSelectedCount();
+
+  } catch(e) {
+    console.error('크롭 재생성 오류:', e);
+  } finally {
+    closeCropModal();
+  }
+}
+
+function closeCropModal() {
+  const wrap = document.getElementById('cropCanvasWrap');
+  wrap.onmousedown = wrap.onmousemove = wrap.onmouseup = null;
+  wrap.ontouchstart = wrap.ontouchmove = wrap.ontouchend = null;
+  document.getElementById('cropModalBg').classList.remove('open');
+  cropImg = null; cropIdx = -1; cropBox = null;
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeCropModal(); closePosModal(); } });
+
+// ── 위치 조정 모달 ──────────────────────────────────────
+let posIdx = -1, posImg = null;
+let posOrigDx = 0, posOrigDy = 0, posOrigDw = 0, posOrigDh = 0;
+
+async function openPosModal(idx) {
+  posIdx = idx;
+  document.getElementById('posModalName').textContent = `↕ 위치 조정 — ${results[idx].name}`;
+
+  const r = results[idx];
+
+  // 이전 저장값 복원
+  document.getElementById('posXSlider').value  = r.posOffX  || 0;
+  document.getElementById('posYSlider').value  = r.posOffY  || 0;
+  document.getElementById('posScaleSlider').value = r.posScale || 100;
+  document.getElementById('posXLabel').textContent     = (r.posOffX  || 0) + 'px';
+  document.getElementById('posYLabel').textContent     = (r.posOffY  || 0) + 'px';
+  document.getElementById('posScaleLabel').textContent = (r.posScale || 100) + '%';
+
+  // 크롭본 있으면 크롭본, 없으면 originalFile (원본 기준으로 배치)
+  posImg = await new Promise(res => {
+    const im = new Image(); im.onload = () => res(im);
+    im.src = r.croppedDataUrl || URL.createObjectURL(r.originalFile);
+  });
+
+  // 현재 카드 배치 재계산
+  const face = detectFaceRegion(posImg);
+  const faceScale = parseInt(document.getElementById('faceScale').value) / 100;
+  const faceTop   = parseInt(document.getElementById('faceTop').value)   / 100;
+  if (face) {
+    const scale = (CARD_W * faceScale) / face.fw;
+    posOrigDw = posImg.naturalWidth  * scale;
+    posOrigDh = posImg.naturalHeight * scale;
+    posOrigDx = CARD_W * 0.5 - (face.fx + face.fw / 2) * scale;
+    posOrigDy = CARD_H * faceTop - face.fy * scale;
+  } else {
+    const scale = CARD_W / posImg.naturalWidth;
+    posOrigDw = CARD_W; posOrigDh = posImg.naturalHeight * scale;
+    posOrigDx = 0; posOrigDy = 0;
+  }
+
+  drawPosPreview();
+  document.getElementById('posModalBg').classList.add('open');
+  const posBtn = document.getElementById('posConfirmBtn');
+  posBtn.textContent = '✓ 적용'; posBtn.disabled = false;
+}
+
+function resetPosSliders() {
+  document.getElementById('posXSlider').value  = 0;
+  document.getElementById('posYSlider').value  = 0;
+  document.getElementById('posScaleSlider').value = 100;
+  document.getElementById('posXLabel').textContent     = '0px';
+  document.getElementById('posYLabel').textContent     = '0px';
+  document.getElementById('posScaleLabel').textContent = '100%';
+  if (posImg) drawPosPreview();
+}
+
+function onPosSlider() {
+  const ox = parseInt(document.getElementById('posXSlider').value);
+  const oy = parseInt(document.getElementById('posYSlider').value);
+  const sc = parseInt(document.getElementById('posScaleSlider').value);
+  document.getElementById('posXLabel').textContent     = ox + 'px';
+  document.getElementById('posYLabel').textContent     = oy + 'px';
+  document.getElementById('posScaleLabel').textContent = sc + '%';
+  drawPosPreview();
+}
+
+function drawPosPreview() {
+  const ox = parseInt(document.getElementById('posXSlider').value);
+  const oy = parseInt(document.getElementById('posYSlider').value);
+  const sc = parseInt(document.getElementById('posScaleSlider').value) / 100;
+  const canvas = document.getElementById('posCanvas');
+  const ctx = canvas.getContext('2d');
+  const bgColor = getBgColor();
+  ctx.fillStyle = bgColor;
+  ctx.fillRect(0, 0, 320, 423);
+  const dw = posOrigDw * sc;
+  const dh = posOrigDh * sc;
+  const dx = posOrigDx + (posOrigDw - dw) / 2 + ox;
+  const dy = posOrigDy + (posOrigDh - dh) / 2 + oy;
+  ctx.drawImage(posImg, dx, dy, dw, dh);
+  // 가이드
+  const gc = document.getElementById('posGuideCanvas');
+  const gctx = gc.getContext('2d');
+  gctx.clearRect(0, 0, 320, 423);
+  if (guidesVisible) {
+    gctx.strokeStyle = 'rgba(30,160,255,0.95)'; gctx.lineWidth = 1.5;
+    gctx.strokeRect(BOX_GUIDE.x, BOX_GUIDE.y, BOX_GUIDE.w, BOX_GUIDE.h);
+    gctx.setLineDash([4,3]);
+    gctx.beginPath(); gctx.moveTo(0, BOX_GUIDE.y); gctx.lineTo(320, BOX_GUIDE.y); gctx.stroke();
+    gctx.setLineDash([]);
+  }
+}
+
+async function confirmPos() {
+  const btn = document.getElementById('posConfirmBtn');
+  btn.textContent = '적용 중...'; btn.disabled = true;
+
+  // 비동기 전에 필요한 값 로컬 저장
+  const savedIdx = posIdx;
+  const savedImg = posImg;
+  const ox = parseInt(document.getElementById('posXSlider').value);
+  const oy = parseInt(document.getElementById('posYSlider').value);
+  const sc = parseInt(document.getElementById('posScaleSlider').value) / 100;
+  const bgColor = getBgColor();
+  const quality = parseFloat(document.getElementById('quality').value) || 0.95;
+  const oDw = posOrigDw, oDh = posOrigDh, oDx = posOrigDx, oDy = posOrigDy;
+
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = CARD_W; canvas.height = CARD_H;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, CARD_W, CARD_H);
+    const dw = oDw * sc, dh = oDh * sc;
+    const dx = oDx + (oDw - dw) / 2 + ox;
+    const dy = oDy + (oDh - dh) / 2 + oy;
+    ctx.drawImage(savedImg, dx, dy, dw, dh);
+
+    const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', quality));
+    results[savedIdx].blob = blob;
+    results[savedIdx].posOffX  = ox;
+    results[savedIdx].posOffY  = oy;
+    results[savedIdx].posScale = Math.round(sc * 100);
+
+    const card = document.querySelector(`.preview-card[data-idx="${savedIdx}"]`);
+    card.querySelector('img').src = URL.createObjectURL(blob);
+    drawGuideCanvas(card.querySelector('.guide-canvas'));
+    card.classList.remove('excluded');
+    updateSelectedCount();
+  } catch(e) {
+    console.error('위치 적용 오류:', e);
+  } finally {
+    closePosModal();
+  }
+}
+
+function closePosModal() {
+  document.getElementById('posModalBg').classList.remove('open');
+  posIdx = -1; posImg = null;
+}
+
+// ── 개별 저장 ────────────────────────────────────────
+function downloadSingle(idx) {
+  const { name, blob } = results[idx];
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = name; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── 배경색 일괄 재적용 ──────────────────────────────
+async function reapplyBgColor() {
+  if (!results.length) return;
+  const bgColor = getBgColor();
+  const quality = parseFloat(document.getElementById('quality').value) || 0.95;
+  const faceScale = parseInt(document.getElementById('faceScale').value) / 100;
+  const faceTop   = parseInt(document.getElementById('faceTop').value)   / 100;
+
+  for (let i = 0; i < results.length; i++) {
+    const r = results[i];
+
+    // 위치조정 오프셋이 있으면 originalFile 기준, 없으면 크롭본 우선
+    const hasOffset = (r.posOffX || 0) !== 0 || (r.posOffY || 0) !== 0;
+    const srcUrl = hasOffset
+      ? URL.createObjectURL(r.originalFile)
+      : (r.croppedDataUrl || URL.createObjectURL(r.originalFile));
+    const img = await new Promise(res => {
+      const im = new Image(); im.onload = () => res(im); im.src = srcUrl;
+    });
+
+    // 얼굴 감지 후 배치 계산
+    const face = detectFaceRegion(img);
+    let dx, dy, dw, dh;
+    if (face) {
+      const scale = (CARD_W * faceScale) / face.fw;
+      dw = img.naturalWidth  * scale;
+      dh = img.naturalHeight * scale;
+      dx = CARD_W * 0.5 - (face.fx + face.fw / 2) * scale;
+      dy = CARD_H * faceTop - face.fy * scale;
+    } else {
+      const scale = CARD_W / img.naturalWidth;
+      dw = CARD_W; dh = img.naturalHeight * scale;
+      dx = 0; dy = 0;
+    }
+
+    // 저장된 위치 오프셋 + 스케일 적용
+    const sc = (r.posScale || 100) / 100;
+    const adjDw = dw * sc;
+    const adjDh = dh * sc;
+    dx = dx + (dw - adjDw) / 2 + (r.posOffX || 0);
+    dy = dy + (dh - adjDh) / 2 + (r.posOffY || 0);
+    dw = adjDw; dh = adjDh;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = CARD_W; canvas.height = CARD_H;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, CARD_W, CARD_H);
+    ctx.drawImage(img, dx, dy, dw, dh);
+
+    const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', quality));
+    results[i].blob = blob;
+
+    const card = document.querySelector(`.preview-card[data-idx="${i}"]`);
+    if (card) {
+      card.querySelector('img').src = URL.createObjectURL(blob);
+      drawGuideCanvas(card.querySelector('.guide-canvas'));
+    }
+  }
+}
+</script>
+</body>
+</html>
