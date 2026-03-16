@@ -682,28 +682,18 @@
   <div class="preview-section" id="previewSection">
     <div class="stats-bar" id="statsBar"></div>
     <div class="section-header">
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;width:100%;">
         <span class="section-title">생성 결과 미리보기</span>
         <span class="selected-count" id="selectedCount"></span>
         <button onclick="toggleGuides()" id="guideToggleBtn" style="background:var(--accent);color:#fff;border:1px solid var(--accent);padding:4px 10px;font-size:0.68rem;cursor:pointer;">⊞ 가이드 OFF</button>
         <div style="display:flex;align-items:center;gap:6px;">
           <span style="font-size:0.72rem;color:var(--muted);">배경색</span>
           <input type="color" id="bgColor" value="#ffffff" oninput="syncBgColor(this.value)" style="width:32px;height:28px;border:1px solid var(--border);cursor:pointer;padding:2px;background:var(--surface2);">
-          <div style="display:flex;gap:4px;align-items:center;">
-            <button class="dot-preset" style="background:#3D3D3D;" onclick="selectPreset(null,'#3D3D3D')" title="KT"></button>
-            <button class="dot-preset" style="background:#0074CA;" onclick="selectPreset(null,'#0074CA')" title="삼성"></button>
-            <button class="dot-preset" style="background:#044781;" onclick="selectPreset(null,'#044781')" title="NC"></button>
-            <button class="dot-preset" style="background:#697983;" onclick="selectPreset(null,'#697983')" title="두산"></button>
-            <button class="dot-preset" style="background:#002D5D;" onclick="selectPreset(null,'#002D5D')" title="롯데"></button>
-            <button class="dot-preset" style="background:#C4213A;" onclick="selectPreset(null,'#C4213A')" title="KIA"></button>
-            <button class="dot-preset" style="background:#854058;" onclick="selectPreset(null,'#854058')" title="키움"></button>
-            <button class="dot-preset" style="background:#9B0019;" onclick="selectPreset(null,'#9B0019')" title="SSG"></button>
-            <button class="dot-preset" style="background:#606060;" onclick="selectPreset(null,'#606060')" title="LG"></button>
-            <button class="dot-preset" style="background:#FE7427;" onclick="selectPreset(null,'#FE7427')" title="한화"></button>
-          </div>
         </div>
-        <button class="download-all-btn" id="downloadAllBtn">⬇ JPG ZIP</button>
-        <button class="download-all-btn" id="downloadPngBtn" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);">⬇ PNG ZIP (배경제거)</button>
+        <div style="margin-left:auto;display:flex;gap:8px;">
+          <button class="download-all-btn" id="downloadAllBtn">⬇ JPG ZIP</button>
+          <button class="download-all-btn" id="downloadPngBtn" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);">⬇ PNG ZIP (배경제거)</button>
+        </div>
       </div>
     </div>
     <div class="preview-grid" id="previewGrid"></div>
